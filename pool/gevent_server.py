@@ -16,9 +16,10 @@ monkey.patch_all()
 def server(port):
     s = socket.socket()
     s.bind(('0.0.0.0', port))
-    s.listen(500)
+    s.listen(1000)
     while True:
         cli, addr = s.accept()
+        print(cli)
         gevent.spawn(handle_request, cli)
  
  
@@ -26,10 +27,13 @@ def server(port):
 def handle_request(conn):
     try:
         while True:
-            data = conn.recv(1024)
-            print("recv:", data)
-            conn.send(data)
-            if not data:
+            data = conn.recvfrom(1024)
+            if  data[0] == b'':
+                conn.shutdown(socket.SHUT_WR)
+                break
+            print("recv:", data[0])
+#             conn.send(data)
+            if not data[0]:
                 conn.shutdown(socket.SHUT_WR)
  
     except Exception as  ex:
